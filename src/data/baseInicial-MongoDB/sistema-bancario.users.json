@@ -1,0 +1,70 @@
+[{
+  "_id": {
+    "$oid": "69d3f7dc77dbc27112b0d9f7"
+  },
+  "name": "Antonio Jose",
+  "Account": {
+    "$oid": "69d3f78377dbc27112b0d9f2"
+  },
+  "Card": {
+    "$oid": "69d3f41377dbc27112b0d9e4"
+  },
+  "Features": [],
+  "News": []
+},
+{
+  "_id": {
+    "$oid": "69d3f7dc77dbc27112b0d9f8"
+  },
+  "name": "Joao Silva",
+  "Account": {
+    "$oid": "69d3f78377dbc27112b0d9f3"
+  },
+  "Card": {
+    "$oid": "69d3f41377dbc27112b0d9e5"
+  },
+  "Features": [],
+  "News": []
+},
+{
+  "_id": {
+    "$oid": "69d3f7dc77dbc27112b0d9f9"
+  },
+  "name": "Maria Souza",
+  "Account": {
+    "$oid": "69d3f78377dbc27112b0d9f4"
+  },
+  "Card": {
+    "$oid": "69d3f41377dbc27112b0d9e6"
+  },
+  "Features": [],
+  "News": []
+},
+{
+  "_id": {
+    "$oid": "69d3f7dc77dbc27112b0d9fa"
+  },
+  "name": "Ana Costa",
+  "Account": {
+    "$oid": "69d3f78377dbc27112b0d9f5"
+  },
+  "Card": {
+    "$oid": "69d3f41377dbc27112b0d9e7"
+  },
+  "Features": [],
+  "News": []
+},
+{
+  "_id": {
+    "$oid": "69d3f7dc77dbc27112b0d9fb"
+  },
+  "name": "Carlos Pereira",
+  "Account": {
+    "$oid": "69d3f78377dbc27112b0d9f6"
+  },
+  "Card": {
+    "$oid": "69d3f41377dbc27112b0d9e8"
+  },
+  "Features": [],
+  "News": []
+}]

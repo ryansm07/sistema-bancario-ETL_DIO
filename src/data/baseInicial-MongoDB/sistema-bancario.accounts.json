@@ -1,0 +1,45 @@
+[{
+  "_id": {
+    "$oid": "69d3f78377dbc27112b0d9f2"
+  },
+  "number": "1001-0",
+  "agency": "0001",
+  "balance": 1000,
+  "limit": 500
+},
+{
+  "_id": {
+    "$oid": "69d3f78377dbc27112b0d9f3"
+  },
+  "number": "1002-0",
+  "agency": "0001",
+  "balance": 2000,
+  "limit": 1000
+},
+{
+  "_id": {
+    "$oid": "69d3f78377dbc27112b0d9f4"
+  },
+  "number": "1003-0",
+  "agency": "0001",
+  "balance": 3000,
+  "limit": 1500
+},
+{
+  "_id": {
+    "$oid": "69d3f78377dbc27112b0d9f5"
+  },
+  "number": "1004-0",
+  "agency": "0001",
+  "balance": 4000,
+  "limit": 2000
+},
+{
+  "_id": {
+    "$oid": "69d3f78377dbc27112b0d9f6"
+  },
+  "number": "1005-0",
+  "agency": "0001",
+  "balance": 5000,
+  "limit": 2500
+}]
