@@ -15,7 +15,7 @@ Este projeto foi desenvolvido como parte de um modelo de projeto da **Santander 
 
 1.  **Extract (Extração):** O script conecta-se ao MongoDB Atlas e extrai coleções de `users`, `accounts` e `cards`.
 2.  **Transform (Transformação):** Utilizando Pandas, os dados são cruzados (merge) e limpos para criar uma visão única de cada cliente.
-3.  **Load (Carga & IA):** * O nome de cada cliente é enviado para o modelo **Gemini 1.5 Flash**.
+3.  **Load (Carga & IA):** * O nome de cada cliente é enviado para o modelo **Gemini 2.5 Flash**.
     * A IA gera um conselho de investimento personalizado com limite de 200 caracteres.
     * O resultado é inserido de volta no perfil do usuário no MongoDB na seção `News`.
 
