@@ -24,7 +24,7 @@ Este projeto foi desenvolvido como parte de um modelo de projeto da **Santander 
 ### 1. Pré-requisitos
 * Ter o Python instalado.
 * Uma conta no [Google AI Studio](https://aistudio.google.com/) para obter sua API Key.
-* Um cluster no [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
+* Um cluster no [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). Como modelo pode copiar e colocar os arquivos .json na pasta src/data.
 
 ### 2. Instalação
 Clone o repositório e instale as dependências:
