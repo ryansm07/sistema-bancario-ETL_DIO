@@ -1,6 +1,6 @@
 # Pipeline ETL com IA Generativa: Marketing Bancário Personalizado
 
-Este projeto foi desenvolvido como parte da **Santander Dev Week 2023**. O objetivo é criar um pipeline ETL (Extração, Transformação e Carga) que consome dados de um banco de dados NoSQL (MongoDB), processa informações de clientes e utiliza a API do Google Gemini para gerar mensagens de investimento personalizadas.
+Este projeto foi desenvolvido como parte de um modelo de projeto da **Santander Dev Week 2023**. O objetivo é criar um pipeline ETL (Extração, Transformação e Carga) que consome dados de um banco de dados NoSQL (MongoDB), processa informações de clientes e utiliza a API do Google Gemini para gerar mensagens de investimento personalizadas.
 
 ## 🚀 Tecnologias Utilizadas
 
