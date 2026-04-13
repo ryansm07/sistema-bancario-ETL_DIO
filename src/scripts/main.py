@@ -1,73 +1,116 @@
-import pandas as pd #para manipulação dos dados
-import os #manipulação de diretorios operacionais
-import glob #ler todos os arquivos globalmente em massa
-from pymongo import MongoClient #extracao de dados em Python no MongoDB
-#from google import genai #geracao de mensagens para as noticias
-#from google.genai import types 
-from datetime import date #incluir a data que foi enviada a noticia
-from key_gemini import key
+import pandas as pd
+import os
+import time
+from datetime import date
+from pymongo import MongoClient
+from google import genai
+from google.genai import errors as genai_errors
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from dotenv import load_dotenv
 
-# Conexão com o MongoDB
-mongo_client = MongoClient("mongodb+srv://ryanmartins07_adm:cttmpqb3@sistema-bancario.s4nqqwx.mongodb.net/?appName=sistema-bancario")
+# --- CONFIGURAÇÕES INICIAIS ---
+load_dotenv()  # Carrega as variáveis do arquivo .env
 
-# Configuração do Cliente Gemini 
-#gemini_client = genai.Client(api_key=key)
+# Busca as credenciais de ambiente (Segurança: não expõe chaves no código)
+gemini_key = os.getenv("key")
+mongo_uri = os.getenv("MONGO_URI") # Recomendável colocar a URL do Mongo no .env também
 
-# Geração de uma mensagem para cada cliente do banco
-#def generate_ai_news(user):
+if not gemini_key:
+    raise ValueError("Chave de API do Gemini não encontrada no arquivo .env")
+
+# Inicialização do Cliente Gemini
+gemini_client = genai.Client(api_key=gemini_key)
+
+# Conexão com o banco de dados MongoDB
+mongo_client = MongoClient(mongo_uri)
+
+# --- FUNÇÕES DE APOIO ---
+
+# Decorador de Re-tentativa: Caso a API falhe por excesso de demanda (Erro 503/429), 
+# ele tentará 3 vezes com intervalos crescentes (4s a 10s).
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=4, max=10),
+    retry=retry_if_exception_type(genai_errors.ClientError)
+)
+def generate_ai_news(user_name):
+    """
+    Utiliza o modelo generativo para criar mensagens personalizadas de investimento.
+    """
+    try:
+        prompt = (f"Você é um especialista em marketing bancário. Crie uma mensagem curta "
+                  f"para o cliente {user_name} sobre a importância dos investimentos. "
+                  f"Máximo de 200 caracteres.")
+        
+        # Chamada ao modelo Gemini 2.5 Flash (Otimizado para velocidade e custo)
+        response = gemini_client.models.generate_content(
+            model='gemini-2.5-flash', 
+            contents=prompt
+        )
+        
+        # Verifica se a IA retornou texto (evita quebras por filtros de segurança)
+        return response.text if response.text else "Invista no seu futuro! Fale com seu gerente."
     
-    #response = gemini_client.models.generate_content(
-    #    model='gemini-2.5-flash', contents= f"Você é um especialista em marketing bancário e preciso que crie uma mensagem para o 
-    # usuário {user} sobre a importância dos investimentos com no máximo 200 caracteres"
-    #)
-    #return response.text
+    except Exception as e:
+        print(f"Erro ao processar IA para {user_name}: {e}")
+        return f"{user_name}, que tal diversificar sua carteira hoje? Consulte-nos!"
 
+# --- PIPELINE PRINCIPAL (ETL) ---
 
-#Retornar erro quando não executa
 try:
-    #Puxa a base dos dados
+    # 1. EXTRAÇÃO (Extract)
     db = mongo_client["sistema-bancario"]
-
-    #Extração de cada coleção da base de dados 
+    
+    # Busca dados das coleções no MongoDB e converte para listas
     users = list(db["users"].find())
     accounts = list(db["accounts"].find())
-    #features = list(db["features"].find())
     cards = list(db["cards"].find())
-    news = list(db["news"].find())
     
-    #Transformação de cada tabela em um formato de tabela visual
-    df_temp_users = pd.DataFrame(users)
-    df_temp_accounts = pd.DataFrame(accounts)
-    df_temp_cards = pd.DataFrame(cards)
+    # 2. TRANSFORMAÇÃO (Transform)
+    # Converte listas em DataFrames para manipulação com Pandas
+    df_users = pd.DataFrame(users)
+    df_accounts = pd.DataFrame(accounts)
+    df_cards = pd.DataFrame(cards)
 
-    #Renomear as colunas
-    df_temp_accounts.rename(columns={"_id": "Account"}, inplace=True)
-    df_temp_cards.rename(columns={"_id": "Card"}, inplace=True)
-    df_temp_cards.rename(columns={"number": "number_card"}, inplace=True)
-    df_temp_accounts.rename(columns={"number": "number_account"}, inplace=True)
-    df_temp_cards.rename(columns={"limit": "limit_card"}, inplace=True)
-    df_temp_accounts.rename(columns={"limit": "limit_account"}, inplace=True)
+    # Renomeia colunas para facilitar o merge e evitar conflitos de nomes
+    df_accounts.rename(columns={"_id": "Account", "number": "number_account", "limit": "limit_account"}, inplace=True)
+    df_cards.rename(columns={"_id": "Card", "number": "number_card", "limit": "limit_card"}, inplace=True)
     
-    #Agrupar as colecoes com base nas informações de id de conta e cartão
-    df_temp = df_temp_users.merge(df_temp_accounts, on="Account", how="left")
-    df_temp = df_temp.merge(df_temp_cards, on="Card", how="left")
+    # Unifica as tabelas (Merge) com base nas referências de conta e cartão
+    df_temp = df_users.merge(df_accounts, on="Account", how="left")
+    df_temp = df_temp.merge(df_cards, on="Card", how="left")
 
-    #Exclusao das colunas de referencia
-    df_temp.drop(columns=["_id"], inplace=True, errors="ignore")
-    df_temp.drop(columns=["Account"], inplace=True, errors="ignore")
-    df_temp.drop(columns=["Card"], inplace=True, errors="ignore")
+    # Limpeza: remove colunas de ID internas que não serão usadas no marketing
+    df_temp.drop(columns=["_id", "Account", "Card"], inplace=True, errors="ignore")
 
-    #Revisao da tabela criada 
-    print (df_temp)
+    print("Pipeline de dados consolidado com sucesso. Iniciando geração de conteúdo...")
 
-    for user in df_temp['name']:
-        #news = generate_ai_news(user) #geracao de textos
-        #time.sleep(2) #aumento do intervalo de tempo para diminuir os custo da IA generativa versao gratuita
-        news = f"{user}, seu futuro começa hoje! Invista para multiplicar seu dinheiro, superar a inflação e realizar seus sonhos. Construa um amanhã mais seguro e próspero. Descubra como!"
-        print(news)
-        document = {"icon": "./src/icons/noticia.png", "description": news, "date": date.today().isoformat()}
-        #mongo_client['sistema-bancario']['users'].update_one({'name': user},{"$push": {"News": document}}) #comentar para não inserir várias mensagens ao rodar o código
+    # 3. CARREGAMENTO (Load)
+    # Itera sobre os usuários (limitado ao head(1) para testes/economia de créditos)
+    for name in df_temp['name'].head(1):
+        print(f"Processando: {name}")
+        
+        # Gera o conteúdo personalizado via IA
+        news_content = generate_ai_news(name)
+        
+        # Delay de segurança para respeitar os limites da API Gratuita
+        time.sleep(2) 
 
+        # Estrutura o documento da nova notícia
+        noticia_doc = {
+            "icon": "./src/icons/noticia.png", 
+            "description": news_content, 
+            "date": date.today().isoformat()
+        }
+
+        # Insere a notícia gerada de volta no perfil do usuário no MongoDB
+        db['users'].update_one(
+            {'name': name},
+            {"$push": {"News": noticia_doc}}
+        )
+        print(f"Notícia enviada para o banco: {name}")
 
 except Exception as e:
-    raise Exception("Unable to find the document due to the following error: ", e)
+    # Captura e exibe qualquer erro ocorrido no processo
+    print(f"Falha crítica na execução do script: {e}")
+    raise
